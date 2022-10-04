@@ -1,0 +1,28 @@
+{
+  "name": "icalwebuntis",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node dist/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/express": "^4.17.14",
+    "@types/morgan": "^1.9.3",
+    "@types/node": "^18.8.1",
+    "@types/node-fetch": "^2.6.2",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.8.4"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "express": "^4.18.1",
+    "ical-generator": "^3.5.2",
+    "morgan": "^1.10.0",
+    "node-fetch": "^2.6.7"
+  }
+}
