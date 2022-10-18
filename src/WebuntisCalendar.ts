@@ -1,5 +1,5 @@
 import EventEmitter from "events";
-import { ICalCalendar } from "ical-generator";
+import { ICalCalendar, ICalEvent } from "ical-generator";
 import fetch from 'node-fetch';
 import { WebuntisResponse } from "./types";
 
@@ -14,6 +14,15 @@ enum ElementType {
 // 2 = Teacher
 // 3 = SUBJECT
 // 4 = ROOM
+
+interface Lesson {
+    subject: string;
+    classes: string[];
+    room: string;
+    teacher: string;
+    starthour: Date;
+    endhour: Date;
+}
 
 export default class extends EventEmitter {
     public classId: number;
@@ -40,6 +49,8 @@ export default class extends EventEmitter {
         const url = `https://arche.webuntis.com/WebUntis/api/public/timetable/weekly/data?elementType=1&elementId=${this.classId}&date=${day.getFullYear()}-${day.getMonth() + 1}-${day.getDate()}&formatId=3`;
         const response = await this.fetchWebuntisData(url);
         const classPeriods = response.elementPeriods[this.classId];
+        const lessons: Lesson[] = [];
+
         for (const period of classPeriods) {
 
             let subjectName;
@@ -83,15 +94,28 @@ export default class extends EventEmitter {
             const eminutes = +endHourString.substring(2, 4);
             const endHour = new Date(date.getTime());
             endHour.setHours(ehour, eminutes);
-
-            this.registerActivity({
+            lessons.push({
                 subject: subjectName as string,
                 classes: classes,
                 room: room as string,
                 teacher: teacher as string,
                 starthour: startHour,
                 endhour: endHour
+            });
+        }
+
+        lessons.forEach((lesson) => {
+            const dailyMatchingLessons = lessons.filter((nextLesson) => nextLesson.starthour.getDate() == lesson.starthour.getDate() && nextLesson.subject == lesson.subject);
+            dailyMatchingLessons.forEach((nextLesson) => {
+                if (nextLesson.starthour.getHours() === lesson.endhour.getHours()) {
+                    lesson.endhour = nextLesson.endhour;
+                    lessons.splice(lessons.indexOf(nextLesson), 1);
+                }
             })
+        });
+
+        for (const lesson of lessons) {
+            this.registerActivity(lesson);
         }
     }
 
